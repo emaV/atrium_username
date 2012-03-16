@@ -1,18 +1,15 @@
 <?php
 /**
- * Override of theme('username').
- * Most of the code comes from tao_username,
- * it uses atrium_username_get_name to get the name to display.
+ * Simulate a preprocess function for theme("username")
+ * delegating the actual theming to the original theme function/
  */
 function atrium_username_preprocess_username($object) {
   $theme_username = variable_get('theme_registry_username_function', '');
-
   if($object->uid) {
     $atrium_username = atrium_username_get_name($object->uid);
     $object->name = $atrium_username ? $atrium_username : $object->name;
   }
   return $theme_username($object);
-
 }
 
 /**
