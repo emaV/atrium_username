@@ -134,9 +134,9 @@ function atrium_username_preprocess_block(&$variables) {
   if($variables['block']->bid == "atrium-account") {
     global $user;
     if ($user->uid) {
-      $atrium_username =  atrium_username_get_name($uid);
-      $name = $atrium_username ? $atrium_username : check_plain($user->name);
-      $variables['block']->subject = theme('user_picture', $user) . atrium_username_get_name($user->uid);
+      $atrium_username = atrium_username_get_name($uid);
+      $user_name = $atrium_username ? $atrium_username : check_plain($user->name);
+      $variables['block']->subject = theme('user_picture', $user) . $user_name;
     }
   }
 }
