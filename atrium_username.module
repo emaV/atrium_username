@@ -27,7 +27,8 @@ function atrium_username_theme_registry_alter(&$theme_registry) {
   $atrium_username_path = drupal_get_path('module', 'atrium_username');
 
   // Theme username.
-  $theme_registry['username']['function'] = 'atrium_username_theme_username';
+  variable_set('theme_registry_username_function', $theme_registry['username']['function']);
+  $theme_registry['username']['function'] = 'atrium_username_preprocess_username';
   $theme_registry['username']['include files'] =  array($atrium_username_path . '/atrium_username.theme.inc');
 
   // Theme user name in notification team form.

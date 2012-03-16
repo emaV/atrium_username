@@ -4,36 +4,15 @@
  * Most of the code comes from tao_username,
  * it uses atrium_username_get_name to get the name to display.
  */
-function atrium_username_theme_username($object) {
+function atrium_username_preprocess_username($object) {
+  $theme_username = variable_get('theme_registry_username_function', '');
 
-  if (!empty($object->name)) {
-
-    // Get username from user profile (if not set yet).
-    if(empty($object->atrium_username)) {
-      $atrium_username = atrium_username_get_name($object->uid);
-      $object->atrium_username = $atrium_username ? $atrium_username : $object->name;
-    }
-    $name = $object->atrium_username;
-
-    // Shorten the name when it is too long or it will break many tables.
-    $shortname = drupal_strlen($object->atrium_username) > 20 ? drupal_substr($object->atrium_username, 0, 15) . '...' : $object->atrium_username;
-    $shortname = check_plain($shortname);
-
-    // Default case -- we have a real Drupal user here.
-    if ($object->uid && user_access('access user profiles')) {
-      return l($shortname, 'user/' . $object->uid, array('attributes' => array('class' => 'username', 'title' => t('View user profile.'))));
-    }
-    // Handle cases where user is not registered but has a link or name available.
-    else if (!empty($object->homepage)) {
-      return l($shortname, $object->homepage, array('attributes' => array('class' => 'username', 'rel' => 'nofollow')));
-    }
-    // Produce an unlinked username.
-    else {
-      return "<span class='username'>{$name}</span>";
-    }
-
+  if($object->uid) {
+    $atrium_username = atrium_username_get_name($object->uid);
+    $object->name = $atrium_username ? $atrium_username : $object->name;
   }
-  return "<span class='username'>" . variable_get('anonymous', t('Anonymous')) . "</span>";
+  return $theme_username($object);
+
 }
 
 /**
