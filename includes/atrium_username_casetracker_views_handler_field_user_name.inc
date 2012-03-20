@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Field handler to show Selective state.
+ * Field handler to show atrium_username instad of plain $user->name.
  *
  * @ingroup views_field_handlers
  */
@@ -10,11 +10,12 @@ class atrium_username_casetracker_views_handler_field_user_name extends views_ha
   function render($values) {
     $uid = $values->{$this->field_alias};
     if($uid==0) {
-      $assign_to = t('Unassigned');
+      return casetracker_get_name($uid);
     }
     else {
-      $assign_to = atrium_username_get_name($uid) ? atrium_username_get_name($uid) : casetracker_get_name($uid);
+      $atrium_username = atrium_username_get_name($uid);
+      return $atrium_username ? $atrium_username : casetracker_get_name($uid);
     }
-    return $assign_to;
   }
+
 }

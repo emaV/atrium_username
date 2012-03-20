@@ -5,40 +5,12 @@
  */
 function atrium_username_preprocess_username($object) {
   $theme_username = variable_get('theme_registry_username_function', '');
-  if($object->uid) {
-    $atrium_username = atrium_username_get_name($object->uid);
-    $object->name = $atrium_username ? $atrium_username : $object->name;
+  $user =  drupal_clone($object);
+  if($user->uid) {
+    $atrium_username = atrium_username_get_name($user->uid);
+    $user->name = $atrium_username ? $atrium_username : $user->name;
   }
-  return $theme_username($object);
-}
-
-/**
- * Override notifications_team_form (notification options) theme function.
- */
-function atrium_username_theme_notifications_team_form($form) {
-  if ($form['options']['#value']) {
-    $options = '';
-    foreach ($form['options']['#value'] as $uid => $name) {
-      $atrium_username = atrium_username_get_name($uid);
-      $form['options']['#value'][$uid] = $atrium_username ? $atrium_username : $name;
-    }
-  }
-  return theme_notifications_team_form($form);
-}
-
-/**
- * Override casetracker_case_form ('Assign to' options) theme function.
- */
-function atrium_username_theme_casetracker_case_form_common($form) {
-  $assign_to = $form['assign_to']['#options'];
-  foreach($assign_to as $key => $value) {
-    $uid = casetracker_get_uid($key);
-    $atrium_username =  atrium_username_get_name($uid);
-    $name = $atrium_username ? $atrium_username : $value;
-    $form['assign_to']['#options'][$key] = $name;
-    $form['assign_to'][$key]['#title'] = $name;
-  }
-  return theme_casetracker_case_form_common($form);
+  return $theme_username($user);
 }
 
 /**

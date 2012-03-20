@@ -2,7 +2,7 @@
 
 /**
  * Field handler to provide a renderer that theme user name in Open Atrium views
- * using theme('username') instead of username field.
+ * using atrium_username instead of username field.
  *
  * @ingroup views_field_handlers
  */

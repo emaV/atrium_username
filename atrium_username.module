@@ -1,5 +1,4 @@
 <?php
-
 include_once('atrium_username.features.inc');
 
 /**
@@ -19,7 +18,8 @@ function atrium_username_get_name($uid) {
 
 /**
  * Implementation of hook_theme_registry_alter().
- * - add theme override for theme('username')
+ * - simulate hook_preprocess for theme('username')
+ * - insert an hook_preprocess_block function _before_ proper theming
  */
 function atrium_username_theme_registry_alter(&$theme_registry) {
 
@@ -31,25 +31,15 @@ function atrium_username_theme_registry_alter(&$theme_registry) {
   $theme_registry['username']['function'] = 'atrium_username_preprocess_username';
   $theme_registry['username']['include files'] =  array($atrium_username_path . '/atrium_username.theme.inc');
 
-  // Theme user name in notification team form.
-  $theme_registry['notifications_team_form']['function'] = 'atrium_username_theme_notifications_team_form';
-  $theme_registry['notifications_team_form']['include files'][] =  $atrium_username_path . 'atrium_username.theme.inc';
-
-  // Theme user name in casetracker_case_form_common.
-  $theme_registry['casetracker_case_form_common']['function'] = 'atrium_username_theme_casetracker_case_form_common';
-  $theme_registry['casetracker_case_form_common']['include files'][] = $atrium_username_path . '/atrium_username.theme.inc';
-
   // Theme user name in casetracker_comment_changes.
   $theme_registry['casetracker_comment_changes']['function'] = 'atrium_username_theme_casetracker_comment_changes';
   $theme_registry['casetracker_comment_changes']['include files'][] = $atrium_username_path . '/atrium_username.theme.inc';
 
-  // Preprocess block.
-  // Inject custom preprocessor before tao/ginkgo.
+  // Insert custom preprocessor before theming (tao/ginkgo or anything else).
   $preprocess_function = $theme_registry['block']['preprocess functions'];
   $preprocess_theme = array_slice($preprocess_function, 2);
   array_unshift($preprocess_theme, 'atrium_username_preprocess_block');
   array_splice($preprocess_function, 2, count($preprocess_function), $preprocess_theme);
-
   $theme_registry['block']['preprocess functions'] = $preprocess_function;
   $theme_registry['block']['include files'][] = $atrium_username_path . '/atrium_username.theme.inc';
 
@@ -58,8 +48,12 @@ function atrium_username_theme_registry_alter(&$theme_registry) {
 /**
 * Implementation of hook_form_alter().
 * - views-exposed-form-casetracker-cases-page-1: casetracker filter
+* - comment_form: 'Assign to' options
+* - $form['notifications'] options
 */
 function atrium_username_form_alter(&$form, $form_state, $form_id) {
+
+  // casetracker filter
   if($form_id=='views_exposed_form' && $form['#id']=='views-exposed-form-casetracker-cases-page-1') {
     foreach($form['assign_to']['#options'] as $uid => $value) {
       if(is_int($uid) && $uid>0) {
@@ -70,11 +64,32 @@ function atrium_username_form_alter(&$form, $form_state, $form_id) {
       }
     }
   }
+  // comment form casetracker options
+  elseif($form_id=='comment_form') {
+    // Assign to
+    if(!empty($form['casetracker']['assign_to']['#options'])) {
+      $assign_to = $form['casetracker']['assign_to']['#options'];
+      foreach($assign_to as $key => $value) {
+        $uid = casetracker_get_uid($key);
+        $atrium_username =  atrium_username_get_name($uid);
+        $name = $atrium_username ? $atrium_username : $value;
+        $form['casetracker']['assign_to']['#options'][$key] = $name;
+      }
+    }
+  }
+  // Change notification_team form options
+  if(!empty($form['notifications']['notifications_team']['options']['#value'])) {
+    foreach($form['notifications']['notifications_team']['options']['#value'] as $uid => $name) {
+      $atrium_username =  atrium_username_get_name($uid);
+      $name = $atrium_username ? $atrium_username : $name;
+      $form['notifications']['notifications_team']['options']['#value'][$uid] = $name;
+    }
+  }
 }
 
 /**
- * Implementation of hoo_views_pre_render().
- * - profile_display
+ * Implementation of hook_views_pre_render().
+ * - profile_display.page_1: override page title
  */
 function atrium_username_views_pre_render(&$view) {
 
@@ -87,5 +102,4 @@ function atrium_username_views_pre_render(&$view) {
     }
   }
 }
-
 
