@@ -4,7 +4,7 @@
  * Implementation of hook_views_data_alter().
  */
 function atrium_username_views_data_alter(&$data) {
-dpm($data['casetracker_case'], 'atrium_username_views_data_alter');
+
   // override casetracker_case > assign_to
   $data['casetracker_case']['assign_to']['field']['handler'] = 'atrium_username_casetracker_views_handler_field_user_name';
 
