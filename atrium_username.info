@@ -1,1 +1,8 @@
-name = atrium_username
+name = "Atrium Username"
+description = "Manage user name display in Open Atrium"
+core = "6.x"
+package = "Features"
+dependencies[] = "atrium"
+dependencies[] = "casetracker"
+dependencies[] = "spaces"
+features[views_api][] = "api:2"
