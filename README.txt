@@ -4,9 +4,6 @@ Copyright (C) 2012 San Francisco State University
 http://sfsu.edu
 equinto@sfsu.edu
 
-The latest version can be downloaded from
-https://github.com/emaV/atrium_username
-
 Installation instructions: place the contents of this directory in an
 atrium_username subdirectory under sites/all/modules/features in your
 Open Atrium installation, then enable the feature from the Features
