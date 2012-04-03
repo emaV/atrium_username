@@ -179,3 +179,44 @@ function atrium_username_views_pre_render(&$view) {
   }
 }
 
+/**
+* Implementation of hook_token_values_alter().
+*/
+function atrium_username_token_values_alter(&$replacements, $context) {
+
+  // set user-name token
+  global $user;
+  $user_name = atrium_username_get_name($user->uid);
+  if($user_name) {
+    $replacements['user-name'] = $user_name;
+  }
+
+  // set default value
+  $uid = $context['object']->uid;
+  $tokens = array();
+  switch($context['type']) {
+    case 'user':
+      $tokens = array('user', 'user-raw');
+      break;
+    case 'comment':
+      $tokens = array('comment-author-name', 'comment-author-name-raw');
+      break;
+    case 'node':
+      $tokens = array('author-name', 'author-name-raw');
+      break;
+  }
+
+  // get atrium_username
+  $atrium_username = atrium_username_get_name($uid);
+  if(empty($atrium_username) || empty($tokens)) {
+    return;
+  }
+  $atrium_username_plain = check_plain($atrium_username);
+
+  // process tokens
+  foreach($tokens as $token) {
+    $replacements[$token] = (substr($token, -4) == '-raw') ? $atrium_username : $atrium_username_plain;
+  }
+
+}
+
