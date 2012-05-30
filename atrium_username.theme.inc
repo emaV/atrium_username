@@ -4,12 +4,13 @@
  * delegating the actual theming to the original theme function/
  */
 function atrium_username_preprocess_username($object) {
-  $theme_username = $_SESSION['theme_registry_username_function'] ? $_SESSION['theme_registry_username_function'] : 'theme_username';
+  $theme_username = function_exists($_SESSION['theme_registry_username_function']) ? $_SESSION['theme_registry_username_function'] : 'theme_username';
   $user =  drupal_clone($object);
-  if($user->uid) {
+  if ($user->uid) {
     $atrium_username = atrium_username_get_name($user->uid);
     $user->name = $atrium_username ? $atrium_username : $user->name;
   }
+
   return $theme_username($user);
 }
 
@@ -79,7 +80,7 @@ function atrium_username_theme_casetracker_comment_changes($old, $new) {
  */
 function atrium_username_preprocess_block(&$variables) {
   // atrium-account
-  if($variables['block']->bid == "atrium-account") {
+  if ($variables['block']->bid == "atrium-account") {
     global $user;
     if ($user->uid) {
       $atrium_username = atrium_username_get_name($user->uid);

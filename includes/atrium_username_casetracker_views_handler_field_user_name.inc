@@ -9,7 +9,7 @@ class atrium_username_casetracker_views_handler_field_user_name extends views_ha
 
   function render($values) {
     $uid = $values->{$this->field_alias};
-    if($uid==0) {
+    if ($uid==0) {
       return casetracker_get_name($uid);
     }
     else {

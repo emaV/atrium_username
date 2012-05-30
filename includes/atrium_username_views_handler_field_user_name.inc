@@ -26,7 +26,7 @@ class atrium_username_views_handler_field_user_name extends views_handler_field_
       }
     }
     // Otherwise, there's no special handling, so try to return atrium_username.
-    if(isset($values->{$field_uid})) {
+    if (isset($values->{$field_uid})) {
       $atrium_username = atrium_username_get_name($values->{$field_uid});
       return $atrium_username ? $atrium_username : $data;
     }
