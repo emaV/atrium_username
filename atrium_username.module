@@ -166,7 +166,11 @@ function atrium_username_form_alter(&$form, $form_state, $form_id) {
   }
   // author name node form
   elseif ($form_id == 'group_node_form') {
-    if(isset($form['author']['name']['#autocomplete_path'])) {
+    if (isset($form['author']['name']['#autocomplete_path'])) {
+      $atrium_username = atrium_username_get_name($form['uid']['#value']);
+      if ($atrium_username) { 
+        $form['author']['name']['#default_value'] = $atrium_username;
+      }
       $form['author']['name']['#autocomplete_path'] = 'members/add/autocomplete';
       array_unshift($form['#validate'], 'atrium_username_node_form_validate');
     }
