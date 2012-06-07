@@ -27,13 +27,13 @@ function atrium_username_autocomplete($string = '') {
 
     $query = "SELECT u.uid, u.name, n.title, u.mail
               FROM {users} u LEFT JOIN {node} n ON (n.uid=u.uid  AND n.type='profile')
-              WHERE LOWER(n.title) LIKE LOWER('%s%%') OR LOWER(u.name) LIKE LOWER('%s%%') OR LOWER(u.mail) LIKE LOWER('%s%%')";
+              WHERE u.uid AND (LOWER(n.title) LIKE LOWER('%s%%') OR LOWER(u.name) LIKE LOWER('%s%%') OR LOWER(u.mail) LIKE LOWER('%s%%'))";
     $query = db_rewrite_sql($query, 'users', 'uid', array($string, $string, $string));
 
     $result = db_query_range($query, array($string, $string, $string), 0, 10);
     while ($user = db_fetch_array($result)) {
       foreach ($user as $key => $val) {
-        if (strncmp($string, $val, $len) === 0) {
+        if (strncasecmp($string, $val, $len) === 0) {
           $matches[$val] = $val . " [" . $user['uid'] . "]";
         }
       }
@@ -43,19 +43,38 @@ function atrium_username_autocomplete($string = '') {
 }
 
 /**
+ * Get uid from title/name/mail
+ */
+function _atrium_username_get_uid($atrium_username) {
+  $query = "SELECT u.uid
+            FROM {users} u LEFT JOIN {node} n ON (n.uid=u.uid  AND n.type='profile')
+            WHERE n.title='%s' OR u.name='%s' OR u.mail='%s'";
+  $uid = db_result(db_query($query, array($atrium_username, $atrium_username, $atrium_username)));
+  return $uid;
+}
+
+/**
  * Overrided submit handler for member addform.
  * It handles title/name/mail
  */
 function atrium_username_addform_submit(&$form, &$form_state) {
-  $atrium_username = $form_state['values']['username'];
-  $query = "SELECT u.uid
-            FROM {users} u LEFT JOIN {node} n ON (n.uid=u.uid  AND n.type='profile')
-            WHERE n.title='%s' OR u.name='%s' OR u.mail='%s'";
-
-  if ($uid = db_result(db_query($query, array($atrium_username, $atrium_username, $atrium_username)))) {
+  if ($uid = _atrium_username_get_uid($atrium_username)) {
     if ($account = user_load($uid)) {
       og_save_subscription($form_state['values']['group']->nid, $account->uid, array('is_active' => 1));
       drupal_set_message(t('Subscribed user %name to %group.', array('%name' => $atrium_username, '%group' => $form_state['values']['group']->title)));
+    }
+  }
+}
+
+/**
+ * Add validation handler for author name node form.
+ * It handles title/name/mail
+ */
+function atrium_username_node_form_validate(&$form, &$form_state) {
+  $atrium_username = $form_state['values']['name'];
+  if ($uid = _atrium_username_get_uid($atrium_username)) {
+    if ($account = user_load($uid)) {
+      $form_state['values']['name'] = $account->name;
     }
   }
 }
@@ -117,7 +136,7 @@ function atrium_username_theme_registry_alter(&$theme_registry) {
 * - views-exposed-form-casetracker-cases-page-1: casetracker filter
 * - comment_form: 'Assign to' options
 * - $form['notifications'] options
-* - atrium_members_addform: override submit hook
+* - atrium_members_addform: override submit hook, change label
 */
 function atrium_username_form_alter(&$form, $form_state, $form_id) {
 
@@ -145,6 +164,13 @@ function atrium_username_form_alter(&$form, $form_state, $form_id) {
       }
     }
   }
+  // author name node form
+  elseif ($form_id == 'group_node_form') {
+    if(isset($form['author']['name']['#autocomplete_path'])) {
+      $form['author']['name']['#autocomplete_path'] = 'members/add/autocomplete';
+      array_unshift($form['#validate'], 'atrium_username_node_form_validate');
+    }
+  }
   // Change notification_team form options
   if (!empty($form['notifications']['notifications_team']['options']['#value'])) {
     foreach ($form['notifications']['notifications_team']['options']['#value'] as $uid => $name) {
@@ -155,6 +181,7 @@ function atrium_username_form_alter(&$form, $form_state, $form_id) {
   }
   // Change submit hook for 'Add Existing users' form
   if ($form_id=='atrium_members_addform') {
+    $form['username']['#title'] = t('Username or email');
     $form['#submit'] = array('atrium_username_addform_submit');
   }
 }
