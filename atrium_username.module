@@ -9,11 +9,16 @@ include_once('atrium_username.features.inc');
  */
 function atrium_username_get_name($uid) {
   static $users = array();
-  if (!isset($users[$uid])) {
-    // get data from db DIRECTLY
-    $users[$uid] = db_result(db_query("SELECT title FROM {node} WHERE type='profile' AND uid=%d", $uid));
+  if($uid) {
+    if (!isset($users[$uid])) {
+      // get data from db DIRECTLY
+      $users[$uid] = db_result(db_query("SELECT title FROM {node} WHERE type='profile' AND uid=%d", $uid));
+    }
+    return $users[$uid];
   }
-  return $users[$uid];
+  else {
+    return NULL;
+  }
 }
 
 /**
@@ -58,6 +63,7 @@ function _atrium_username_get_uid($atrium_username) {
  * It handles title/name/mail
  */
 function atrium_username_addform_submit(&$form, &$form_state) {
+  $atrium_username = $form_state['values']['username'];
   if ($uid = _atrium_username_get_uid($atrium_username)) {
     if ($account = user_load($uid)) {
       og_save_subscription($form_state['values']['group']->nid, $account->uid, array('is_active' => 1));
