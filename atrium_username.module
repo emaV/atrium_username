@@ -129,10 +129,7 @@ function atrium_username_theme_registry_alter(&$theme_registry) {
 
   // Insert custom preprocessor before theming (tao/ginkgo or anything else).
   $preprocess_function = $theme_registry['block']['preprocess functions'];
-  $preprocess_theme = array_slice($preprocess_function, 2);
-  array_unshift($preprocess_theme, 'atrium_username_preprocess_block');
-  array_splice($preprocess_function, 2, count($preprocess_function), $preprocess_theme);
-  $theme_registry['block']['preprocess functions'] = $preprocess_function;
+  array_splice($theme_registry['block']['preprocess functions'], 2, 0, 'atrium_username_preprocess_block');
   $theme_registry['block']['include files'][] = $atrium_username_path . '/atrium_username.theme.inc';
 
 }
