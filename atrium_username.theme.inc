@@ -5,7 +5,7 @@
  */
 function atrium_username_preprocess_username($object) {
   $theme_username = function_exists($_SESSION['theme_registry_username_function']) ? $_SESSION['theme_registry_username_function'] : 'theme_username';
-  $user =  drupal_clone($object);
+  $user =  user_load($object->uid);
   if ($user->uid) {
     $atrium_username = atrium_username_get_name($user->uid);
     $user->name = $atrium_username ? $atrium_username : $user->name;
