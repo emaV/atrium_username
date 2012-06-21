@@ -221,8 +221,8 @@ function atrium_username_views_pre_render(&$view) {
 }
 
 /**
-* Implementation of hook_token_values_alter().
-*/
+ * Implementation of hook_token_values_alter().
+ */
 function atrium_username_token_values_alter(&$replacements, $context) {
 
   // set user-name token
@@ -260,4 +260,36 @@ function atrium_username_token_values_alter(&$replacements, $context) {
   }
 
 }
+
+/**
+ * Implementation of hook_preprocess_page().
+ * - set breadcrumb for member_section context (defined in atrium_members_context_page_condition)
+ */
+function atrium_username_preprocess_page(&$vars) {
+
+  // reset breadcrumb
+  $active_contexts = context_active_contexts();
+  if (isset($active_contexts['members_section'])) {
+    $account = menu_get_object('user');
+    $account = $account ? $account : menu_get_object('user_uid_optional');
+    $account = $account ? $account : menu_get_object('user_category');
+    if ($account) {
+      $breadcrumb = array(l(t('Home'), '<front>'));
+      $item = menu_get_item('members');
+      if ($item['access']) {
+        $breadcrumb[] = l($item['title'], $item['href']);
+      }
+      $item = menu_get_item("user/{$account->uid}");
+      if ($item['access']) {
+        $account_name = atrium_username_get_name($account->uid);
+        $account_name = $account_name ? $account_name : $account->name;
+        $breadcrumb[] = l($account_name, $item['href']);
+      }
+      drupal_set_breadcrumb($breadcrumb);
+      $vars['breadcrumb'] = theme('breadcrumb', drupal_get_breadcrumb());
+    }
+  }
+
+}
+
 
