@@ -142,7 +142,6 @@ function atrium_username_theme_registry_alter(&$theme_registry) {
 * - atrium_members_addform: override submit hook, change label
 */
 function atrium_username_form_alter(&$form, $form_state, $form_id) {
-
   // casetracker filter
   if ($form_id=='views_exposed_form' && $form['#id']=='views-exposed-form-casetracker-cases-page-1') {
     foreach ($form['assign_to']['#options'] as $uid => $value) {
@@ -157,13 +156,20 @@ function atrium_username_form_alter(&$form, $form_state, $form_id) {
   // comment form casetracker options
   elseif ($form_id=='comment_form' || $form_id=='casetracker_basic_case_node_form') {
     // Assign to
+    // Uses uid instead of user name to solve the issue:
+    // "casetracker_nodeapi case insert should not use is_numeric($record->assign_to)"
+    // http://drupal.org/node/923700
     if (!empty($form['casetracker']['assign_to']['#options'])) {
+      $notification_team = array_flip($form['notifications']['notifications_team']['options']['#value']);
       $assign_to = $form['casetracker']['assign_to']['#options'];
       foreach ($assign_to as $key => $value) {
-        $uid = casetracker_get_uid($key);
-        $atrium_username =  atrium_username_get_name($uid);
-        $name = $atrium_username ? $atrium_username : $value;
-        $form['casetracker']['assign_to']['#options'][$key] = $name;
+        if (isset($notification_team[$key])) {
+          $uid = $notification_team[$key];
+          $atrium_username =  atrium_username_get_name($uid);
+          $name = $atrium_username ? $atrium_username : $value;
+          unset($form['casetracker']['assign_to']['#options'][$key]);
+          $form['casetracker']['assign_to']['#options'][$uid] = $name;
+        }
       }
     }
   }
@@ -171,7 +177,7 @@ function atrium_username_form_alter(&$form, $form_state, $form_id) {
   elseif ($form_id == 'group_node_form') {
     if (isset($form['author']['name']['#autocomplete_path'])) {
       $atrium_username = atrium_username_get_name($form['uid']['#value']);
-      if ($atrium_username) { 
+      if ($atrium_username) {
         $form['author']['name']['#default_value'] = $atrium_username;
       }
       $form['author']['name']['#autocomplete_path'] = 'members/add/autocomplete';
