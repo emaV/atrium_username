@@ -171,6 +171,10 @@ function atrium_username_form_alter(&$form, $form_state, $form_id) {
           $form['casetracker']['assign_to']['#options'][$uid] = $name;
         }
       }
+      $default_value = $form['casetracker']['assign_to']['#default_value'];
+      if (isset($notification_team[$default_value])) {
+        $form['casetracker']['assign_to']['#default_value'] = $notification_team[$default_value];
+      }
     }
   }
   // author name node form
